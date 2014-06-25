@@ -16,7 +16,7 @@ find_package(Threads REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES SickLD SickLMS1xx SickLMS2xx
+  LIBRARIES SickLD SickLMS1xx SickLMS2xx SickNAV350
   CATKIN_DEPENDS
   DEPENDS Threads
 )
