@@ -20,7 +20,7 @@
 #define DEFAULT_SICK_BYTE_TIMEOUT         (35000)  ///< Max allowable time between consecutive bytes
 
 /* Definition dependencies */
-#include "SickNav350Message.hh"
+#include "SickNAV350Message.hh"
 #include "SickBufferMonitor.hh"
 #include "SickException.hh"
 

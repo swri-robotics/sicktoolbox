@@ -15,16 +15,16 @@
  */
 
 /* Auto-generated header */
-#include "SickConfig.hh"
+#include "sicktoolbox/SickConfig.hh"
 
 /* Implementation dependencies */
 #include <iostream>
 #include <sys/ioctl.h>
 
-#include "SickNav350BufferMonitor.hh"
-#include "SickNav350Message.hh"
-#include "SickException.hh"
-#include "SickNav350Utility.hh"
+#include "sicktoolbox/SickNAV350BufferMonitor.hh"
+#include "sicktoolbox/SickNAV350Message.hh"
+#include "sicktoolbox/SickException.hh"
+#include "sicktoolbox/SickNAV350Utility.hh"
 
 /* Associate the namespace */
 namespace SickToolbox {

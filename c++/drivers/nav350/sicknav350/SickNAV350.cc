@@ -14,7 +14,7 @@
  */
 
 /* Auto-generated header */
-#include "SickConfig.hh"
+#include "sicktoolbox/SickConfig.hh"
 
 /* Implementation dependencies */
 #include <string>
@@ -35,11 +35,11 @@
 #include <vector>             // for returning the results of parsed strings
 #include <errno.h>            // for timing connect()
 
-#include "SickNav350.hh"
-#include "SickNav350Message.hh"
-#include "SickNav350BufferMonitor.hh"
-#include "SickNav350Utility.hh"   
- #include "SickException.hh"
+#include "sicktoolbox/SickNAV350.hh"
+#include "sicktoolbox/SickNAV350Message.hh"
+#include "sicktoolbox/SickNAV350BufferMonitor.hh"
+#include "sicktoolbox/SickNAV350Utility.hh"   
+ #include "sicktoolbox/SickException.hh"
 using namespace std;
 /* Associate the namespace */
 namespace SickToolbox {
