@@ -50,6 +50,9 @@ const std::string SickNav350::GETIDENT_COMMAND="DeviceIdent";
 const std::string SickNav350::SETOPERATINGMODE_COMMAND_TYPE="sMN";
 const std::string SickNav350::SETOPERATINGMODE_COMMAND="mNEVAChangeState";
 
+const std::string SickNav350::SETVELOCITY_COMMAND_TYPE="sMN";
+const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
+
 const std::string SickNav350::GETDATA_COMMAND_TYPE="sMN";
 const std::string SickNav350::GETDATA_COMMAND="mNPOSGetData";
 
@@ -623,6 +626,137 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 
   }
+  
+ void SickNav350::SetSpeed(double x,double y,double phi,int timestamp,int coordbase)
+ {
+//	  std::cout<<"set speed"<<std::endl;
+	    uint8_t payload_buffer[SickNav350Message::MESSAGE_PAYLOAD_MAX_LENGTH] = {0};
+	    int count=0;
+	    std::string command_type=this->SETVELOCITY_COMMAND_TYPE;
+	    std::string command=this->SETVELOCITY_COMMAND;
+	    for (int i=0;i<command_type.length();i++)
+	    {
+	    	payload_buffer[count]=command_type[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+	    for (int i=0;i<command.length();i++)
+	    {
+	    	payload_buffer[count]=command[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+	    char c[100];
+	    sprintf(c,"%d",(int)(x*1000));
+	    if (c[0]!='-')
+	    {
+		    payload_buffer[count]='+';
+		    count++;
+	    }
+	    for (int i=0;i<strlen(c);i++)
+	    {
+	    	payload_buffer[count]=c[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+
+	    sprintf(c,"%d",(int)(y*1000));
+	    if (c[0]!='-')
+	    {
+		    payload_buffer[count]='+';
+		    count++;
+	    }
+	    for (int i=0;i<strlen(c);i++)
+	    {
+	    	payload_buffer[count]=c[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+
+	    sprintf(c,"%d",(int)(phi/3.14159*180*1000));
+	    if (c[0]!='-')
+	    {
+		    payload_buffer[count]='+';
+		    count++;
+	    }
+	    for (int i=0;i<strlen(c);i++)
+	    {
+	    	payload_buffer[count]=c[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+
+	    sprintf(c,"%d",timestamp);
+	    if (c[0]!='-')
+	    {
+		    payload_buffer[count]='+';
+		    count++;
+	    }
+	    for (int i=0;i<strlen(c);i++)
+	    {
+	    	payload_buffer[count]=c[i];
+	    	count++;
+	    }
+	    payload_buffer[count]=' ';
+	    count++;
+
+	    payload_buffer[count]=48+coordbase;
+	    count++;
+
+/*		for (int i=0;i<count;i++)
+		{
+			printf("%c",payload_buffer[i]);
+		}
+		printf("\n");*/
+	    /* Create the Sick messages */
+	    SickNav350Message send_message(payload_buffer,count);
+	    SickNav350Message recv_message;
+
+
+	    uint8_t byte_sequence[] = {'s','A','N',' ','m','N','P','O','S','S','e','t','S','p','e','e','d',0};
+	    
+	    int byte_sequence_length=16;
+	    /*for (int i=0;i<16;i++) printf("%c",byte_sequence[i]);
+		printf("\n");*/
+
+	    /* Send the message and check the reply */
+	    try {
+	      _sendMessageAndGetReply(send_message,recv_message);
+	      //sick_nav350_sector_data_t.
+//	      _SplitReceivedMessage(recv_message);
+	/*  int messagelength=recv_message.GetMessageLength();
+	  uint8_t *message=new uint8_t[messagelength];
+	  recv_message.GetMessage(message);
+			for (int i=0;i<messagelength;i++)
+			{
+				printf("%c",message[i]);
+			}
+			printf("\n");
+	      std::cout<<"Set velocity"<<std::endl;*/
+	    }
+
+	    catch(SickTimeoutException &sick_timeout_exception) {
+	      std::cerr << "sick_timeout_exception" << std::endl;
+
+	      throw;
+	    }
+
+	    catch(SickIOException &sick_io_exception) {
+	      std::cerr << "sick_io_exception" << std::endl;
+	      throw;
+	    }
+
+	    catch(...) {
+	      std::cerr << "SickNav350::_set operating mode - Unknown exception!" << std::endl;
+	      throw;
+	    }
+
+ }
   void SickNav350::GetData(int wait,int dataset)
   {
 	    uint8_t payload_buffer[SickNav350Message::MESSAGE_PAYLOAD_MAX_LENGTH] = {0};

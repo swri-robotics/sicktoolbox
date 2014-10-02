@@ -32,12 +32,13 @@
 #define SWAP_VALUES(x,y,t) (t=x,x=y,y=t);
 
 /* Definition dependencies */
+#include <stdio.h>
 #include <string>
 #include <vector>
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
-
+//#include <stdio.h>
 #include "sicktoolbox/SickLIDAR.hh"
 #include "sicktoolbox/SickNAV350BufferMonitor.hh"
 #include "sicktoolbox/SickNAV350Message.hh"
@@ -129,6 +130,10 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
 
     static const std::string GETDATALANDMARK_COMMAND_TYPE;
     static const std::string GETDATALANDMARK_COMMAND;
+
+    static const std::string SETVELOCITY_COMMAND_TYPE;
+    static const std::string SETVELOCITY_COMMAND;
+
 
     static const std::string GETDATANAVIGATION_COMMAND_TYPE;
     static const std::string GETDATANAVIGATION_COMMAND;
@@ -331,7 +336,7 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     /**Send custom message and get response*/
     void GetResponseFromCustomMessage(uint8_t *req,int req_size,uint8_t *res,int *res_size);
 
-
+    void SetSpeed(double x,double y,double phi,int timestamp,int coordbase);
     /** Destructor */
     ~SickNav350();
 

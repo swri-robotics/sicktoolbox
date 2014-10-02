@@ -83,8 +83,8 @@ target_link_libraries(lms2xx_stream_range_and_reflect SickLMS2xx ${catkin_LIBRAR
 add_executable(lms2xx_subrange c++/examples/lms2xx/lms2xx_subrange/src/main.cc)
 target_link_libraries(lms2xx_subrange SickLMS2xx ${catkin_LIBRARIES})
 
-#add_executable(nav350_server c++/examples/nav350/nav350_server/src/main.cc c++/examples/nav350/nav350_server/src/server.cc)
-#target_link_libraries(nav350_server SickNAV350 ${catkin_LIBRARIES})
+add_executable(nav350_server c++/examples/nav350/nav350_server/src/main.cc c++/examples/nav350/nav350_server/src/server.cc)
+target_link_libraries(nav350_server SickNAV350 ${catkin_LIBRARIES})
 
 add_executable(NAV350_single_sector c++/examples/nav350/nav350_single_sector/src/main.cc)
 target_link_libraries(NAV350_single_sector SickNAV350 ${catkin_LIBRARIES})

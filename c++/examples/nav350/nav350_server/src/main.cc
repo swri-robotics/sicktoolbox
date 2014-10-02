@@ -174,7 +174,7 @@ int main (int argc, char *argv[]) {
 	return 0;*/
   /* A string for the IP address */
   //string sick_ip_addr(DEFAULT_SICK_IP_ADDRESS);
-	string sick_ip_addr("192.168.1.10");
+	string sick_ip_addr("192.168.1.100");
 
   /* Check the num of args */
   if(argc > 2 || (argc == 2 && strcasecmp(argv[1],"--help") == 0)) {
