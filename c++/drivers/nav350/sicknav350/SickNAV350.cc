@@ -143,16 +143,16 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
     {
       throw SickIOException("SickNAV350::Uninitialize - Device NOT Initialized!!!");
     }
-    std::cout << std::endl << "\t*** Attempting to uninitialize the Sick LD..." << std::endl;
+    std::cout << std::endl << "\t*** Attempting to uninitialize the Sick NAV350..." << std::endl;
 
       delete []arg;
       delete MeasuredData_;
     /* If necessary, tell the Sick LD to stop streaming data */
     try
     {
-      std::cout << "\tSetting Sick LD to idle mode..." << std::endl;
+      std::cout << "\tSetting Sick NAV350 to idle mode..." << std::endl;
       _setSickSensorMode(1);
-      std::cout << "\t\tSick LD is now idle!" << std::endl;
+      std::cout << "\t\tSick NAV350 is now idle!" << std::endl;
 
       /* Clear any signals that were set */
        //SetSickSignals();
@@ -163,8 +163,9 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
        std::cout << "\t\tBuffer monitor canceled!" << std::endl;
 
        /* Attempt to close the tcp connection */
-       std::cout << "\tClosing connection to Sick LD..." << std::endl;
+       std::cout << "\tClosing connection to Sick NAV350..." << std::endl;
        _teardownConnection();
+       std::cout << "\tConnection to Sick NAV350 closed." << std::endl;
     }
     catch(SickIOException &sick_io_exception)
     {
