@@ -276,15 +276,16 @@ namespace SickToolbox {
     else {
       
       /* Write the message to the unit one byte at a time */
-      for (unsigned int i = 0; i < message_length; i++) {
-	
-	/* Write a single byte to the stream */
-	if (write(_sick_fd,&message_buffer[i],1) != 1) {
-	  throw SickIOException("SickLIDAR::_sendMessage: write() failed!");
-	}
-	
-	/* Some time between bytes (Sick LMS 2xx likes this) */
-	usleep(byte_interval);	
+      for (unsigned int i = 0; i < message_length; i++)
+      {
+    	  /* Write a single byte to the stream */
+    	  if (write(_sick_fd,&message_buffer[i],1) != 1)
+    	  {
+    		  throw SickIOException("SickLIDAR::_sendMessage: write() failed!");
+    	  }
+
+    	  /* Some time between bytes (Sick LMS 2xx likes this) */
+    	  usleep(byte_interval);
       }
 
     }    
@@ -299,28 +300,27 @@ namespace SickToolbox {
    */
   template< class SICK_MONITOR_CLASS, class SICK_MSG_CLASS >
   void SickLIDAR< SICK_MONITOR_CLASS, SICK_MSG_CLASS >::_recvMessage( SICK_MSG_CLASS &sick_message,
-								      const unsigned int timeout_value ) const throw ( SickTimeoutException ) {
-
+								      const unsigned int timeout_value ) const throw ( SickTimeoutException )
+  {
     /* Timeval structs for handling timeouts */
     struct timeval beg_time, end_time;
 
     /* Acquire the elapsed time since epoch */
     gettimeofday(&beg_time,NULL);
-    
+
     /* Check the shared object */
-    while(!_sick_buffer_monitor->GetNextMessageFromMonitor(sick_message)) {    
-      
+    while(!_sick_buffer_monitor->GetNextMessageFromMonitor(sick_message))
+    {
       /* Sleep a little bit */
       usleep(1000);
-    
+
       /* Check whether the allowed time has expired */
-      gettimeofday(&end_time,NULL);    
-      if (_computeElapsedTime(beg_time,end_time) > timeout_value) {
-	throw SickTimeoutException("SickLIDAR::_recvMessage: Timeout occurred!");
+      gettimeofday(&end_time,NULL);
+      if (_computeElapsedTime(beg_time,end_time) > timeout_value)
+      {
+        throw SickTimeoutException("SickLIDAR::_recvMessage: Timeout occurred!");
       }
-      
     }
-    
   }
 
   /**
@@ -352,35 +352,36 @@ namespace SickToolbox {
     gettimeofday(&beg_time,NULL);
 
     /* Check until it is found or a timeout */
-    for(;;) {
-      
+    for(;;)
+    {
       /* Attempt to acquire the message */
       unsigned int i = 0;
-      if (_sick_buffer_monitor->GetNextMessageFromMonitor(curr_message)) {	
-	
-	/* Extract the payload subregion */
-	curr_message.GetPayloadSubregion(payload_buffer,0,byte_sequence_length-1);
-	
-	/* Match the byte sequence */
-	for (i=0; (i < byte_sequence_length) && (payload_buffer[i] == byte_sequence[i]); i++);
+      if (_sick_buffer_monitor->GetNextMessageFromMonitor(curr_message))
+      {
+        /* Extract the payload subregion */
+        curr_message.GetPayloadSubregion(payload_buffer,0,byte_sequence_length-1);
 
-	/* Our message was found! */
-	if (i == byte_sequence_length) {
-	  sick_message = curr_message;
-	  break;
-	}
-	
+        /* Match the byte sequence */
+        for (i=0; (i < byte_sequence_length) && (payload_buffer[i] == byte_sequence[i]); i++);
+
+        /* Our message was found! */
+        if (i == byte_sequence_length)
+        {
+          sick_message = curr_message;
+          break;
+        }
       }
-      
+
       /* Sleep a little bit */
-      usleep(1000);     
+      usleep(1000);
 
       /* Check whether the allowed time has expired */
-      gettimeofday(&end_time,NULL);        
-      if (_computeElapsedTime(beg_time,end_time) > timeout_value) {
-      	throw SickTimeoutException();
-      }      
-      
+      gettimeofday(&end_time,NULL);
+      if (_computeElapsedTime(beg_time,end_time) > timeout_value)
+      {
+        throw SickTimeoutException();
+      }
+
     }
 
   }
@@ -403,50 +404,53 @@ namespace SickToolbox {
 										 throw( SickTimeoutException, SickIOException ) {
     
     /* Send the message for at most num_tries number of times */
-    for(unsigned int i = 0; i < num_tries; i++) {
+    for(unsigned int i = 0; i < num_tries; i++)
+    {
+      try
+      {
+        /* Send the frame to the unit */
+        _sendMessage(send_message,byte_interval);
 
-      try {
+        /* Wait for the reply! */
+        _recvMessage(recv_message,byte_sequence,byte_sequence_length,timeout_value);
 
-	/* Send the frame to the unit */
-	_sendMessage(send_message,byte_interval);
-	
-	/* Wait for the reply! */
-	_recvMessage(recv_message,byte_sequence,byte_sequence_length,timeout_value);
-
-	/* message was found! */
-	break;
+        /* message was found! */
+        break;
 
       }
 
       /* Handle a timeout! */
-      catch (SickTimeoutException &sick_timeout) {
-	
-	/* Check if it was found! */
-	if (i == num_tries - 1) {
-	  throw SickTimeoutException("SickLIDAR::_sendMessageAndGetReply: Attempted max number of tries w/o success!");
-	}
-	
-	/* Display the number of tries remaining! */
-	std::cerr << sick_timeout.what() << " " << num_tries - i - 1  << " tries remaining" <<  std::endl;
-	
+      catch (SickTimeoutException &sick_timeout)
+      {
+        /* Check if it was found! */
+        if (i == num_tries - 1)
+        {
+          throw SickTimeoutException("SickLIDAR::_sendMessageAndGetReply: Attempted max number of tries w/o success!");
+        }
+
+        /* Display the number of tries remaining! */
+        std::cerr << sick_timeout.what() << " " << num_tries - i - 1  << " tries remaining" <<  std::endl;
+
       }
-      
+
       /* Handle write buffer exceptions */
-      catch (SickIOException &sick_io_error) {
-	std::cerr << sick_io_error.what() << std::endl;
-	throw;
+      catch (SickIOException &sick_io_error)
+      {
+        std::cerr << sick_io_error.what() << std::endl;
+        throw;
       }
-      
+
       /* A safety net */
-      catch (...) {
-	std::cerr << "SickLIDAR::_sendMessageAndGetReply: Unknown exception!!!" << std::endl;
-	throw;
+      catch (...)
+      {
+        std::cerr << "SickLIDAR::_sendMessageAndGetReply: Unknown exception!!!" << std::endl;
+        throw;
       }
-      
+
     }
-    
+
   }
-  
+
 } /* namespace SickToolbox */
 
 #endif /* SICK_LIDAR */
