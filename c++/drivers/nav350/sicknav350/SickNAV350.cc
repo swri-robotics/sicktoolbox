@@ -91,10 +91,10 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
    */
   void SickNav350::Initialize( ) throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException ) {
 
-    std::cout << "\t*** Attempting to initialize the Sick Nav350..." << std::endl; 
+    std::cout << "\t*** Attempting to initialize the Sick Nav350..." << std::endl;
 
     try {
-      
+
       /* Attempt to connect to the Sick Nav350 */
       std::cout << "\tAttempting to connect to Sick Nav350 @ " << _sick_ip_address << ":" << _sick_tcp_port << std::endl;
       _setupConnection();
@@ -104,15 +104,15 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
       std::cout << "\tAttempting to start buffer monitor..." << std::endl;
       _startListening();
       std::cout << "\t\tBuffer monitor started!" << std::endl;
-    
-      
+
+
     }
-    
+
     catch(SickIOException &sick_io_exception) {
       std::cerr << sick_io_exception.what() << std::endl;
       throw;
     }
-    
+
     catch(SickThreadException &sick_thread_exception) {
       std::cerr << sick_thread_exception.what() << std::endl;
       throw;
@@ -127,7 +127,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
       std::cerr << "SickNav350::Initialize - Unknown exception!" << std::endl;
       throw;
     }
-    
+
     std::cout << "\t\tSynchronized!" << std::endl;
 
     _sick_initialized = true;
@@ -135,11 +135,57 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 
     /* Success */
   }
-  
-  void SickNav350::Uninitialize( )
+
+  void SickNav350::Uninitialize( ) throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException )
   {
-	  delete []arg;
-	  delete MeasuredData_;
+    /* Ensure the device has been initialized */
+    if (!_sick_initialized)
+    {
+      throw SickIOException("SickNAV350::Uninitialize - Device NOT Initialized!!!");
+    }
+    std::cout << std::endl << "\t*** Attempting to uninitialize the Sick LD..." << std::endl;
+
+      delete []arg;
+      delete MeasuredData_;
+    /* If necessary, tell the Sick LD to stop streaming data */
+    try
+    {
+      std::cout << "\tSetting Sick LD to idle mode..." << std::endl;
+      _setSickSensorMode(1);
+      std::cout << "\t\tSick LD is now idle!" << std::endl;
+
+      /* Clear any signals that were set */
+       //SetSickSignals();
+
+       /* Attempt to cancel the buffer monitor */
+       std::cout << "\tAttempting to cancel buffer monitor..." << std::endl;
+       _stopListening();
+       std::cout << "\t\tBuffer monitor canceled!" << std::endl;
+
+       /* Attempt to close the tcp connection */
+       std::cout << "\tClosing connection to Sick LD..." << std::endl;
+       _teardownConnection();
+    }
+    catch(SickIOException &sick_io_exception)
+    {
+      std::cerr << sick_io_exception.what() << std::endl;
+      throw;
+    }
+    catch(SickThreadException &sick_thread_exception)
+    {
+      std::cerr << sick_thread_exception.what() << std::endl;
+      throw;
+    }
+    catch(SickTimeoutException &sick_timeout_exception)
+    {
+      std::cerr << sick_timeout_exception.what() << std::endl;
+      throw;
+    }
+    catch(...)
+    {
+      std::cerr << "SickNav350::Uninitialize - Unknown exception!" << std::endl;
+      throw;
+    }
   }
 
   /**
@@ -177,7 +223,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 
     /* Return the std string representation */
     return str_stream.str();
- 
+
   }
 
   /**
@@ -244,13 +290,13 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 
       /* Set to non-blocking so we can time connect */
       _setNonBlockingIO();
-    
+
       /* Try to connect to the Sick Nav350 */
       int conn_return;
       if ((conn_return = connect( _sick_fd, (struct sockaddr *) &_sick_inet_address_info,sizeof(struct sockaddr_in))) < 0) {
 
 	/* Check whether it is b/c it would block */
-	if (errno != EINPROGRESS) {	
+	if (errno != EINPROGRESS) {
 	  throw SickIOException("SickNav350::_setupConnection: connect() failed!");
 	}
 
@@ -259,7 +305,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	int num_active_files = 0;
 	struct timeval timeout_val;                          // This structure will be used for setting our timeout values
 	fd_set file_desc_set;                                // File descriptor set for monitoring I/O
-    
+
 	/* Initialize and set the file descriptor set for select */
 	FD_ZERO(&file_desc_set);
 	FD_SET(_sick_fd,&file_desc_set);
@@ -268,48 +314,48 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	timeout_val.tv_sec=0;
 	timeout_val.tv_usec=0;
 	timeout_val.tv_usec = DEFAULT_SICK_CONNECT_TIMEOUT;  // Wait for specified time before throwing a timeout
-      
+
 	/* Wait for the OS to tell us that the connection is established! */
 	num_active_files = select(getdtablesize(),0,&file_desc_set,0,&timeout_val);
-      
+
 	/* Figure out what to do based on the output of select */
 	if (num_active_files > 0) {
-	
+
 	  /* This is just a sanity check */
 	  if (!FD_ISSET(_sick_fd,&file_desc_set)) {
   	    throw SickIOException("SickNav350::_setupConnection: Unexpected file descriptor!");
-	  }	  
+	  }
 
 	  /* Check for any errors on the socket - just to be sure */
 	  socklen_t len = sizeof(int);
-	  if (getsockopt(_sick_fd,SOL_SOCKET,SO_ERROR,(void*)(&valid_opt),&len) < 0) { 	    
+	  if (getsockopt(_sick_fd,SOL_SOCKET,SO_ERROR,(void*)(&valid_opt),&len) < 0) {
   	    throw SickIOException("SickNav350::_setupConnection: getsockopt() failed!");
-	  } 
+	  }
 
 	  /* Check whether the opt value indicates error */
-	  if (valid_opt) { 
+	  if (valid_opt) {
 	    throw SickIOException("SickNav350::_setupConnection: socket error on connect()!");
 	  }
-	  
+
   	}
 	else if (num_active_files == 0) {
-	
+
 	  /* A timeout has occurred! */
-	  throw SickTimeoutException("SickNav350::_setupConnection: select() timeout!");	
+	  throw SickTimeoutException("SickNav350::_setupConnection: select() timeout!");
 
 	}
 	else {
-	
+
 	  /* An error has occurred! */
-	  throw SickIOException("SickNav350::_setupConnection: select() failed!");	
+	  throw SickIOException("SickNav350::_setupConnection: select() failed!");
 
 	}
 
       }
 
       /* Restore blocking IO */
-      _setBlockingIO();	
-	
+      _setBlockingIO();
+
     }
 
     catch(SickIOException &sick_io_exception) {
@@ -321,7 +367,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
       std::cerr << sick_timeout_exception.what() << std::endl;
       throw;
     }
-    
+
     catch(...) {
       std::cerr << "SickNav350::_setupConnection - Unknown exception occurred!" << std::endl;
       throw;
@@ -337,52 +383,54 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
    * \brief Sets the Sick Nav350 to the requested sensor mode
    * \param new_sick_sensor_mode The desired sensor mode
    */
-  void SickNav350::_setSickSensorMode( const uint8_t new_sick_sensor_mode ) 
+  void SickNav350::_setSickSensorMode( const uint8_t new_sick_sensor_mode )
     throw( SickErrorException, SickTimeoutException, SickIOException ) {
-  
-    /* If the new mode matches the current mode then just return */
 
+    /* If the new mode matches the current mode then just return
+	    if (_sick_sensor_mode == new_sick_sensor_mode) {
+	      return;
+	    }*/
     try {
-    
-      
+
+
 
     }
-          
+
     /* Handle a timeout! */
     catch (SickTimeoutException &sick_timeout_exception) {
       std::cerr << sick_timeout_exception.what() << std::endl;
       throw;
     }
-    
+
     /* Handle I/O exceptions */
     catch (SickIOException &sick_io_exception) {
       std::cerr << sick_io_exception.what() << std::endl;
       throw;
     }
-    
+
     /* Handle a returned error code */
     catch (SickErrorException &sick_error_exception) {
       std::cerr << sick_error_exception.what() << std::endl;
       throw;
     }
-    
+
     /* A safety net */
     catch (...) {
       std::cerr << "SickLMS::_setSickSensorMode: Unknown exception!!!" << std::endl;
       throw;
-    }  
+    }
 
     /* Allocate a single buffer for payload contents */
     uint8_t payload_buffer[SickNav350Message::MESSAGE_PAYLOAD_MAX_LENGTH] = {0};
-    
+
     /* The payload length */
     uint32_t payload_length = 2;
-    
+
     /* Set the service IDs */
     payload_buffer[0] = 0;//SICK_WORK_SERV_CODE;                                       // Requested service type
     payload_buffer[1] = 0;//_sickSensorModeToWorkServiceSubcode(new_sick_sensor_mode); // Requested service subtype
-    
-    
+
+
     /* Define the send/receive message objects */
     SickNav350Message send_message(payload_buffer,payload_length);
     SickNav350Message recv_message;
@@ -390,26 +438,26 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
     try {
       //_sendMessageAndGetReply(send_message,recv_message);
     }
-        
+
     /* Handle a timeout! */
     catch (SickTimeoutException &sick_timeout_exception) {
       std::cerr << sick_timeout_exception.what() << std::endl;
       throw;
     }
-    
+
     /* Handle I/O exceptions */
     catch (SickIOException &sick_io_exception) {
       std::cerr << sick_io_exception.what() << std::endl;
       throw;
     }
-    
+
     /* A safety net */
     catch (...) {
       std::cerr << "SickLMS::_setSickSensorMode: Unknown exception!!!" << std::endl;
       throw;
     }
 
-  
+
     /* Extract the message payload */
     recv_message.GetPayload(payload_buffer);
 
@@ -419,8 +467,8 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 
   }
 
-  
-  
+
+
   /**
    * \brief Get the status of the Sick Nav350
    */
@@ -432,16 +480,16 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
     /* Set the service IDs */
     payload_buffer[0] = 0;//SICK_STAT_SERV_CODE;       // Requested service type
     payload_buffer[1] = 0;//SICK_STAT_SERV_GET_STATUS; // Requested service subtype
-  
+
     /* Create the Sick messages */
     SickNav350Message send_message(payload_buffer,2);
     SickNav350Message recv_message;
-  
+
     /* Send the message and check the reply */
     try {
       //_sendMessageAndGetReply(send_message,recv_message);
     }
-    
+
     catch(SickTimeoutException &sick_timeout_exception) {
       std::cerr << "sick_timeout_exception" << std::endl;
       throw;
@@ -456,9 +504,9 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
       std::cerr << "SickNav350::_getSickStatus - Unknown exception!" << std::endl;
       throw;
     }
-    
 
-  
+
+
     /* Extract the message payload */
     recv_message.GetPayload(payload_buffer);
 
@@ -546,7 +594,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    try {
 	      _sendMessageAndGetReply(send_message,recv_message);
 	      //sick_nav350_sector_data_t.
-	      std::cout<<"Receved Identity"<<std::endl;
+	      std::cout<<"Received Identity"<<std::endl;
 	    }
 
 	    catch(SickTimeoutException &sick_timeout_exception) {
@@ -561,7 +609,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 
 	    catch(...) {
-	      std::cerr << "SickNav350::_getSickStatus - Unknown exception!" << std::endl;
+	      std::cerr << "SickNav350::_getSickIdentity - Unknown exception!" << std::endl;
 	      throw;
 	    }
 
@@ -587,14 +635,14 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 	    payload_buffer[count]=' ';
 	    count++;
-	    payload_buffer[count]=48+mode;
+	    payload_buffer[count]=48+mode;//Single numbers that are converted to HEX always get a 3 in front
 	    count++;
 
 	    /* Create the Sick messages */
 	    SickNav350Message send_message(payload_buffer,count);
 	    SickNav350Message recv_message;
 
-
+	    //byte_sequence sAN mNEVAChangeState (expected in response)
 	    uint8_t byte_sequence[] = {115,65,78,32,109,78,69,86,65,67,104,97,110,103,101,83,116,97,116,101};
 	    int byte_sequence_length=20;
 
@@ -606,7 +654,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	      //sick_nav350_sector_data_t.
 //	      _SplitReceivedMessage(recv_message);
 
-	      std::cout<<"Set operating mode"<<std::endl;
+	      std::cout<<"Set operating mode: "<<mode<<std::endl;
 	    }
 
 	    catch(SickTimeoutException &sick_timeout_exception) {
@@ -626,7 +674,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 
   }
-  
+
  void SickNav350::SetSpeed(double x,double y,double phi,int timestamp,int coordbase)
  {
 //	  std::cout<<"set speed"<<std::endl;
@@ -719,7 +767,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 
 
 	    uint8_t byte_sequence[] = {'s','A','N',' ','m','N','P','O','S','S','e','t','S','p','e','e','d',0};
-	    
+
 	    int byte_sequence_length=16;
 	    /*for (int i=0;i<16;i++) printf("%c",byte_sequence[i]);
 		printf("\n");*/
@@ -752,7 +800,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 
 	    catch(...) {
-	      std::cerr << "SickNav350::_set operating mode - Unknown exception!" << std::endl;
+	      std::cerr << "SickNav350::_set speed - Unknown exception!" << std::endl;
 	      throw;
 	    }
 
@@ -788,10 +836,9 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    SickNav350Message send_message(payload_buffer,count);
 	    SickNav350Message recv_message;
 
-
+	    //byte_sequence sAN mPOSGetData
 	    uint8_t byte_sequence[] = {115,65,78,32,109,78,80,79,83,71,101,116,68,97,116,97};
 	    int byte_sequence_length=5;
-
 
 	    /* Send the message and check the reply */
 	    try {
@@ -805,7 +852,7 @@ const std::string SickNav350::GETDATANAVIGATION_COMMAND="mNPOSGetData";
 	    }
 
 	    catch(SickTimeoutException &sick_timeout_exception) {
-	      std::cerr << "sick_timeout_except=0;ion" << std::endl;
+	      std::cerr << "sick_timeout_exception" << std::endl;
 
 	      throw;
 	    }
