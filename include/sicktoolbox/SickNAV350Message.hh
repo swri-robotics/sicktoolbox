@@ -50,13 +50,13 @@ namespace SickToolbox {
     void ParseMessage( const uint8_t * const message_buffer );
     
     /** Get the length of the service code associated with the message */
-//    uint8_t GetServiceCode( ) const { return _message_buffer[8]; }
+    uint8_t GetServiceCode( ) const { return _message_buffer[8]; }
     
     /** Get the service sub-code associated with the message */
-//    uint8_t GetServiceSubcode( ) const { return _message_buffer[9]; }
+    uint8_t GetServiceSubcode( ) const { return _message_buffer[9]; }
     
     /** Get the checksum for the packet */
-//    uint8_t GetChecksum( ) const { return _message_buffer[_message_length-1]; }
+    uint8_t GetChecksum( ) const { return _message_buffer[_message_length-1]; }
     
     /** A debugging function that prints the contents of the frame. */
     void Print( ) const;
