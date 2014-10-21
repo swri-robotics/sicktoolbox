@@ -141,6 +141,9 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     static const std::string GETDATANAVIGATION_COMMAND_TYPE;
     static const std::string GETDATANAVIGATION_COMMAND;
 
+    static const std::string DOMAPPING_COMMAND_TYPE;
+    static const std::string DOMAPPING_COMMAND;
+
     /**
      * \struct sick_nav350_config_global_tag
      * \brief A structure to aggregate the data used to configure the
@@ -269,7 +272,7 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     void Initialize( )  throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException );
 
     /** Initializes the Sick LD unit (use scan areas defined in flash) */
-    void Uninitialize( ) ;
+    void Uninitialize( ) throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException );
 
     /** Gets the sensor and motor mode of the unit */
     void GetSickStatus( unsigned int &sick_sensor_mode, unsigned int &sick_motor_mode )
@@ -339,7 +342,10 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     /**Send custom message and get response*/
     void GetResponseFromCustomMessage(uint8_t *req,int req_size,uint8_t *res,int *res_size);
 
+    void DoMapping();
+
     void SetSpeed(double x,double y,double phi,int timestamp,int coordbase);
+
     /** Destructor */
     ~SickNav350();
 
