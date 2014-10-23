@@ -74,7 +74,9 @@ namespace SickToolbox {
      */
     _message_buffer[_message_length-1] = 0x03;// ASCII Protocol <ETX>, in hex command ends with 03
 
-    //Useful for debug
+    /*
+     * Print all messages - very useful for debug!
+     */
     //Print();
 
   }

@@ -899,7 +899,7 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 	    }
 
 	    catch(SickTimeoutException &sick_timeout_exception) {
-	      std::cerr << "sick_timeout_except=0;ion" << std::endl;
+	      std::cerr << "sick_timeout_exception" << std::endl;
 
 	      throw;
 	    }
@@ -1135,14 +1135,7 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 		 return;
 	  }
 	  count=6;
-/*	  if (arg[count++]=="1")
-	  {
-		  std::cout<<"Pose data follow"<<std::endl;
-		  std::cout<<arg[count++]+" "+arg[count++]+" "+arg[count++]<<std::endl;
-		  if (arg[count++]=="1")
-		  {
-		  }
-	  }*/
+
 	  if (arg[count++]=="1")
 	  {
 //		  std::cout<<"Pose data follow"<<std::endl;
@@ -1164,12 +1157,12 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 	  }
 	  if (arg[count++]=="1")
 	  {
-	//	  std::cout<<"Landmark data follow"<<std::endl;
+//		  std::cout<<"Landmark data follow"<<std::endl;
 		  ReflectorData_.filter=_ConvertHexToDec(arg[count++]);
-		//  std::cout<<"Landmark filter "<<std::endl;
+//		  std::cout<<"Landmark filter "<<std::endl;
 		  int refcount=atoi(arg[count++].c_str());
 		  ReflectorData_.num_reflector=refcount;
-//		  std::cout<<"reflector count: "<<refcount<<std::endl;
+		  std::cout<<"reflector count: "<<refcount<<std::endl;
 		  for (int i=0;i<refcount;i++)
 		  {
 			  if (arg[count++]=="0")
@@ -1219,11 +1212,10 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 			  else
 			  {
 				  ReflectorData_.optional[i]=0;
-				  std::cout<<"no optional reflector data"<<std::endl;
+//				  std::cout<<"no optional reflector data"<<std::endl;
 			  }
 
 		  }
-//		  for ()
 	  }
 
 	  switch (atoi(arg[count++].c_str()))
