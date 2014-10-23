@@ -66,19 +66,18 @@ namespace SickToolbox {
     /*
      * Set the message header!
      */
-    _message_buffer[0] = 0x02; // STX
+    _message_buffer[0] = 0x02; // ASCII Protocol <STX>, in hex command starts with 02
     
 
     /*
      * Set the message trailer (just a checksum)!
      */
-    _message_buffer[_message_length-1] = 0x03;
-//    std::cout<<"message length"<<_message_length<<std::endl;
-/*    for (int i=0;i<_message_length;i++)
-    {
-    	std::cout<<(char) _message_buffer[i]<<"  "<<(int) _message_buffer[i]<<std::endl;
-    }*/
+    _message_buffer[_message_length-1] = 0x03;// ASCII Protocol <ETX>, in hex command ends with 03
 
+    /*
+     * Print all messages - very useful for debug!
+     */
+    //Print();
 
   }
   
@@ -88,8 +87,8 @@ namespace SickToolbox {
   void SickNav350Message::Print( ) const {
 
     std::cout.setf(std::ios::hex,std::ios::basefield);
-//    std::cout << "Service code: " << (unsigned int) GetServiceCode() << std::endl;
-//    std::cout << "Service subcode: " << (unsigned int) GetServiceSubcode() << std::endl;
+    //std::cout << "Service code: " << (unsigned int) GetServiceCode() << std::endl;
+    //std::cout << "Service subcode: " << (unsigned int) GetServiceSubcode() << std::endl;
     std::cout << std::flush;
 
     /* Call parent's print function */

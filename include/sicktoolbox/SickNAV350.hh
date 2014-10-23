@@ -19,7 +19,7 @@
 
 /* Macros */
 #define DEFAULT_SICK_IP_ADDRESS                          "192.168.1.10"  ///< Default Sick LD INet 4 address
-#define DEFAULT_SICK_TCP_PORT                                   (2111)  ///< Default TCP port
+#define DEFAULT_SICK_TCP_PORT                                    (2111)  ///< Default TCP port
 #define DEFAULT_SICK_MESSAGE_TIMEOUT                (unsigned int)(5e6)  ///< The max time to wait for a message reply (usecs)
 #define DEFAULT_SICK_CONNECT_TIMEOUT                (unsigned int)(1e6)  ///< The max time to wait before considering a connection attempt as failed (usecs)
 #define DEFAULT_SICK_NUM_SCAN_PROFILES                              (0)  ///< Setting this value to 0 will tell the Sick LD to stream measurements when measurement data is requested (NOTE: A profile is a single scans worth of range measurements)
@@ -102,7 +102,7 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     static const uint16_t SICK_MAX_NUM_MEASURING_SECTORS = 4;                           ///< Maximum number of active/measuring scan sectors
     static const uint16_t SICK_MAX_SCAN_AREA = 360;                                     ///< Maximum area that can be covered in a single scan (deg)
     static const uint16_t SICK_MIN_MOTOR_SPEED = 8;                                     ///< Minimum motor speed in Hz
-    static const uint16_t SICK_MAX_MOTOR_SPEED = 8;                                    ///< Maximum motor speed in Hz
+    static const uint16_t SICK_MAX_MOTOR_SPEED = 8;                                     ///< Maximum motor speed in Hz
     static const uint16_t SICK_MIN_VALID_SENSOR_ID = 1;                                 ///< The lowest value the Sick will accept as a Sensor ID
     static const uint16_t SICK_MAX_VALID_SENSOR_ID = 254;                               ///< The largest value the Sick will accept as a Sensor ID    
     static const uint16_t SICK_MAX_MEAN_PULSE_FREQUENCY = 10800;                        ///< Max mean pulse frequence of the current device configuration (in Hz) (see page 22 of the operator's manual)
@@ -118,7 +118,11 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     static const uint8_t SICK_SENSOR_MODE_LMDETECTION = 0x03;                                 ///< The Sick NAV350 is detecting landmarks
     static const uint8_t SICK_SENSOR_MODE_NAVIGATION = 0x04;                               ///< The Sick Nav350 is in navigation mode
   
-
+    /**
+     * \static const std::string *_COMMAND_TYPE
+     * \static const std::string *_COMMAND
+     * \brief Strings for common Telegram commands and corresponding command types
+     */
     static const std::string GETIDENT_COMMAND_TYPE;
     static const std::string GETIDENT_COMMAND;
 
@@ -134,9 +138,11 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     static const std::string SETVELOCITY_COMMAND_TYPE;
     static const std::string SETVELOCITY_COMMAND;
 
-
     static const std::string GETDATANAVIGATION_COMMAND_TYPE;
     static const std::string GETDATANAVIGATION_COMMAND;
+
+    static const std::string DOMAPPING_COMMAND_TYPE;
+    static const std::string DOMAPPING_COMMAND;
 
     /**
      * \struct sick_nav350_config_global_tag
@@ -266,7 +272,7 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     void Initialize( )  throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException );
 
     /** Initializes the Sick LD unit (use scan areas defined in flash) */
-    void Uninitialize( ) ;
+    void Uninitialize( ) throw( SickIOException, SickThreadException, SickTimeoutException, SickErrorException );
 
     /** Gets the sensor and motor mode of the unit */
     void GetSickStatus( unsigned int &sick_sensor_mode, unsigned int &sick_motor_mode )
@@ -336,7 +342,10 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     /**Send custom message and get response*/
     void GetResponseFromCustomMessage(uint8_t *req,int req_size,uint8_t *res,int *res_size);
 
+    void DoMapping();
+
     void SetSpeed(double x,double y,double phi,int timestamp,int coordbase);
+
     /** Destructor */
     ~SickNav350();
 
