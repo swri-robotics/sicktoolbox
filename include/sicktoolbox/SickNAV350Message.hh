@@ -22,7 +22,7 @@
 #include "sicktoolbox/SickMessage.hh"
 
 #define SICK_NAV350_MSG_HEADER_LEN             (1)  ///< Sick Nav350 message header length in bytes
-#define SICK_NAV350_MSG_PAYLOAD_MAX_LEN    (18200)  //(5816)  ///< Sick Nav350 maximum payload length
+#define SICK_NAV350_MSG_PAYLOAD_MAX_LEN        (40000)//(18200)  //(5816)  ///< Sick Nav350 maximum payload length
 #define SICK_NAV350_MSG_TRAILER_LEN            (1)  ///< Sick Nav350 length of the message trailer
 
 /* Associate the namespace */
