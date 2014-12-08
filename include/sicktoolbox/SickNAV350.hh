@@ -324,6 +324,9 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     /** Change to navigation mode */
     void SetOperatingMode(int mode);
 
+    /** Download reflector positions */
+    void StoreLayout();
+
     /**Get data */
     void GetData(int wait,int dataset);
 

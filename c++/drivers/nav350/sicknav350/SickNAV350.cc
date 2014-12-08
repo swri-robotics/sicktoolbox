@@ -723,6 +723,9 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
               throw;
             }
 
+
+            SetOperatingMode(1);
+            StoreLayout();
   }
 
   void SickNav350::GetData(int wait,int dataset)
@@ -1461,5 +1464,59 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 	    }
 
  }
+
+  void SickNav350::StoreLayout()
+  {
+          std::cout<<"Storing layout"<<std::endl;
+            uint8_t payload_buffer[SickNav350Message::MESSAGE_PAYLOAD_MAX_LENGTH] = {0};
+            int count=0;
+            std::string command_type="sMN";// sMN mNLAYStoreLayout
+            std::string command="mNLAYStoreLayout";
+            for (int i=0;i<command_type.length();i++)
+            {
+                payload_buffer[count]=command_type[i];
+                count++;
+            }
+            payload_buffer[count]=' ';
+            count++;
+            for (int i=0;i<command.length();i++)
+            {
+                payload_buffer[count]=command[i];
+                count++;
+            }
+
+            /* Create the Sick messages */
+            SickNav350Message send_message(payload_buffer,count);
+            SickNav350Message recv_message;
+
+            //byte_sequence sAN mNLAYStoreLayout (expected in response)
+            uint8_t byte_sequence[] = {115,65,78,32,109,78,76, 65, 89, 83, 116, 111, 114, 101, 76, 97, 121, 111, 117, 116, 13, 10};//78 76 65 89 83 116 111 114 101 76 97 121 111 117 116 13 10
+            int byte_sequence_length=20;
+
+
+            /* Send the message and check the reply */
+            try {
+              _sendMessageAndGetReply(send_message,recv_message);
+              _recvMessage(recv_message,byte_sequence,byte_sequence_length,DEFAULT_SICK_MESSAGE_TIMEOUT);
+
+            }
+
+            catch(SickTimeoutException &sick_timeout_exception) {
+              std::cerr << "sick_timeout_exception" << std::endl;
+
+              throw;
+            }
+
+            catch(SickIOException &sick_io_exception) {
+              std::cerr << "sick_io_exception" << std::endl;
+              throw;
+            }
+
+            catch(...) {
+              std::cerr << "SickNav350::StoreLayout - Unknown exception!" << std::endl;
+              throw;
+            }
+
+  }
 
 } //namespace SickToolbox
