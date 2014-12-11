@@ -144,6 +144,10 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
     static const std::string DOMAPPING_COMMAND_TYPE;
     static const std::string DOMAPPING_COMMAND;
 
+    static const std::string STORELAYOUT_REQUEST_TYPE;
+    static const std::string STORELAYOUT_RESPONSE_TYPE;
+    static const std::string STORELAYOUT_COMMAND;
+
     /**
      * \struct sick_nav350_config_global_tag
      * \brief A structure to aggregate the data used to configure the
@@ -326,6 +330,7 @@ class SickNav350 : public SickLIDAR< SickNav350BufferMonitor, SickNav350Message 
 
     /** Download reflector positions */
     void StoreLayout();
+    void ReadLayout(std::vector<int>& lanmark_ids);
 
     /**Get data */
     void GetData(int wait,int dataset);

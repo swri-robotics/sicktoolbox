@@ -39,7 +39,9 @@
 #include "sicktoolbox/SickNAV350Message.hh"
 #include "sicktoolbox/SickNAV350BufferMonitor.hh"
 #include "sicktoolbox/SickNAV350Utility.hh"   
- #include "sicktoolbox/SickException.hh"
+#include "sicktoolbox/SickException.hh"
+#include <boost/array.hpp>
+
 using namespace std;
 /* Associate the namespace */
 namespace SickToolbox {
@@ -64,6 +66,11 @@ const std::string SickNav350::DOMAPPING_COMMAND="mNMAPDoMapping";
 
 const std::string SickNav350::SETVELOCITY_COMMAND_TYPE="sMN";
 const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
+
+const std::string SickNav350::STORELAYOUT_REQUEST_TYPE = "sMN";
+const std::string SickNav350::STORELAYOUT_RESPONSE_TYPE = "sAN";
+const std::string SickNav350::STORELAYOUT_COMMAND = "mNLAYStoreLayout";
+
 
   /**
    * \brief A standard constructor
@@ -1465,58 +1472,99 @@ const std::string SickNav350::SETVELOCITY_COMMAND="mNPOSSetSpeed";
 
  }
 
-  void SickNav350::StoreLayout()
-  {
-          std::cout<<"Storing layout"<<std::endl;
-            uint8_t payload_buffer[SickNav350Message::MESSAGE_PAYLOAD_MAX_LENGTH] = {0};
-            int count=0;
-            std::string command_type="sMN";// sMN mNLAYStoreLayout
-            std::string command="mNLAYStoreLayout";
-            for (int i=0;i<command_type.length();i++)
-            {
-                payload_buffer[count]=command_type[i];
-                count++;
-            }
-            payload_buffer[count]=' ';
-            count++;
-            for (int i=0;i<command.length();i++)
-            {
-                payload_buffer[count]=command[i];
-                count++;
-            }
+void SickNav350::StoreLayout()
+{
+  std::cout<<"Storing layout"<<std::endl;
 
-            /* Create the Sick messages */
-            SickNav350Message send_message(payload_buffer,count);
-            SickNav350Message recv_message;
+  std::string command_req = STORELAYOUT_REQUEST_TYPE + ' ' + STORELAYOUT_COMMAND ;
+  std::string command_res = STORELAYOUT_RESPONSE_TYPE + ' ' + STORELAYOUT_COMMAND + '0';
+  std::vector<uint8_t> buffer_req(command_req.begin(),command_req.end());
+  std::vector<uint8_t> buffer_res(command_res.begin(),command_res.end());
 
-            //byte_sequence sAN mNLAYStoreLayout (expected in response)
-            uint8_t byte_sequence[] = {115,65,78,32,109,78,76, 65, 89, 83, 116, 111, 114, 101, 76, 97, 121, 111, 117, 116, 13, 10};//78 76 65 89 83 116 111 114 101 76 97 121 111 117 116 13 10
-            int byte_sequence_length=20;
+  /* Create the Sick messages */
+  SickNav350Message send_message(buffer_req.data(),buffer_req.size());
+  SickNav350Message recv_message;
 
-
-            /* Send the message and check the reply */
-            try {
-              _sendMessageAndGetReply(send_message,recv_message);
-              _recvMessage(recv_message,byte_sequence,byte_sequence_length,DEFAULT_SICK_MESSAGE_TIMEOUT);
-
-            }
-
-            catch(SickTimeoutException &sick_timeout_exception) {
-              std::cerr << "sick_timeout_exception" << std::endl;
-
-              throw;
-            }
-
-            catch(SickIOException &sick_io_exception) {
-              std::cerr << "sick_io_exception" << std::endl;
-              throw;
-            }
-
-            catch(...) {
-              std::cerr << "SickNav350::StoreLayout - Unknown exception!" << std::endl;
-              throw;
-            }
+  /* Send the message and check the reply */
+  try {
+    _sendMessageAndGetReply(send_message,recv_message);
+    _recvMessage(recv_message,buffer_res.data(),buffer_res.size()-1,DEFAULT_SICK_MESSAGE_TIMEOUT);
 
   }
+
+  catch(SickTimeoutException &sick_timeout_exception) {
+    std::cerr << "sick_timeout_exception" << std::endl;
+
+    throw;
+  }
+
+  catch(SickIOException &sick_io_exception) {
+    std::cerr << "sick_io_exception" << std::endl;
+    throw;
+  }
+
+  catch(...) {
+    std::cerr << "SickNav350::StoreLayout - Unknown exception!" << std::endl;
+    throw;
+  }
+
+}
+
+void SickNav350::ReadLayout(std::vector<int>& lanmark_ids)
+{
+  std::cout<<"Storing layout"<<std::endl;
+
+  std::string command_req = STORELAYOUT_REQUEST_TYPE + ' ' + STORELAYOUT_COMMAND ;
+  std::string command_res = STORELAYOUT_RESPONSE_TYPE + ' ' + STORELAYOUT_COMMAND + '0'; // Error code 0 means no error
+  std::vector<uint8_t> buffer_req(command_req.begin(),command_req.end());
+  std::vector<uint8_t> buffer_res(command_res.begin(),command_res.end());
+
+  /* Create the Sick messages */
+  SickNav350Message send_message(buffer_req.data(),buffer_req.size());
+  SickNav350Message recv_message;
+
+  /* Send the message and check the reply */
+  try {
+    _sendMessageAndGetReply(send_message,recv_message);
+    _recvMessage(recv_message,buffer_res.data(),buffer_res.size(),DEFAULT_SICK_MESSAGE_TIMEOUT);
+
+    // reading parameters
+   _SplitReceivedMessage(recv_message);
+
+   // parsing data
+   if(argumentcount_ > 4)
+   {
+     const int param_start_index = 3;
+     int num_landmarks = _ConvertHexToDec(arg[param_start_index]);
+     lanmark_ids.resize(num_landmarks);
+     for(int i = 0 ; i < num_landmarks; i++)
+     {
+       lanmark_ids[i] = _ConvertHexToDec(arg[param_start_index + i + 1]);
+     }
+   }
+   else
+   {
+     std::cerr << "Insufficient arguments were returned by device" << std::endl;
+   }
+
+
+  }
+
+  catch(SickTimeoutException &sick_timeout_exception) {
+    std::cerr << "sick_timeout_exception" << std::endl;
+
+    throw;
+  }
+
+  catch(SickIOException &sick_io_exception) {
+    std::cerr << "sick_io_exception" << std::endl;
+    throw;
+  }
+
+  catch(...) {
+    std::cerr << "SickNav350::StoreLayout - Unknown exception!" << std::endl;
+    throw;
+  }
+}
 
 } //namespace SickToolbox
